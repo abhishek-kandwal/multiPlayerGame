@@ -1,5 +1,5 @@
-const { addClientToConnection, getClientConnection } = require('../store');
-const { uuid } = require('../utils');
+const { addClientToConnection } = require('../store');
+const { uuid, createPayload } = require('../utils');
 const wsEvents = require('./wsEvents');
 
 module.exports = (ws) => {
@@ -11,5 +11,10 @@ module.exports = (ws) => {
         
         const clientId = uuid();
         addClientToConnection(clientId, connection);
+        const payload = createPayload   ('connect', {
+            clientId
+        });
+
+        connection.send(payload);
     });
 };

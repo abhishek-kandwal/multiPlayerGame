@@ -2,10 +2,10 @@ const { parse, stringify } = require('../utils');
 const reqMapper = require('./controller');
 
 const reqExecuter = (req) => {
-    const { method } = req;
+    const { method, data } = req;
     const methodExecuter = reqMapper[method];
     if (methodExecuter) {
-        methodExecuter(req);
+        methodExecuter(data);
     }
 }
 

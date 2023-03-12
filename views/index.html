@@ -1,12 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
+<style>
+
+</style>
+
 <body>
-    <h1>hello FE!</h1>
+    <div>welcome! to game</div>
+    <div id="board" class="board"></div>
+    <div>
+        <button id="connect" onclick="connectToServer()">connect!</button>
+        <button id="createGame" onclick="createGame()">create game!</button>
+        <div id="joinGameContainer">
+            <input id="joinGameId" type="text">
+            <button id="joinGame" onclick="joinGame()">join game!</button>
+        </div>
+    </div>
 </body>
+
 </html>
+<script>
+    let ws = null;
+    let clientId = null;
+    let gameId = null;
+    let boardSize = null;
+
+    const responseMethodMapper = {
+        connect,
+        create,
+        join
+    };
+
+    // client calling functions
+    const connectToServer = () => {
+        ws = new WebSocket('ws://localhost:3001');
+        wsConnections();
+    }
+
+    const wsConnections = () => {
+        ws.onmessage = msg => {
+            const { method, data } = JSON.parse(msg.data); 
+            const methodExe = responseMethodMapper[method];
+            if (methodExe) {
+                methodExe(data);
+            }
+        };
+    }
+
+    const createPayload = (method, data) => {
+        return JSON.stringify({
+            method,
+            data
+        });
+    }
+
+    const createGame = () => {
+        const payload = createPayload('create', {
+            clientId
+        });
+
+        ws.send(payload);
+    }
+
+    const joinGame = () => {
+        const joinGameId = document.getElementById('joinGameId').value;
+        const payload = createPayload('join', {
+            clientId,
+            gameId: joinGameId
+        });
+
+        ws.send(payload);
+    }
+
+    // server response functions
+    function connect(res) {
+        const { clientId: cid } = res;
+        clientId = cid;
+        alert(`connection established ${clientId}`);
+    }
+
+    function create(res) {
+        gameId = res.gameId;
+        boardSize = res.size;
+        clientColor = res.color
+        createBoard(boardSize);
+    }
+
+    function createBoard(size) {
+        const board = document.getElementById('board');
+        for (let i = 0; i < size; i++) {
+            const btnId = 'btn_' + i;
+            const btn = document.createElement('button');
+            btn.id = btnId
+            btn.style.width = '100px';
+            btn.style.height = '100px';
+            btn.onclick = () => boardBtnClicked(btnId);
+            board.appendChild(btn);
+        }
+    }
+
+    function boardBtnClicked(btnId) {
+        document.getElementById(btnId).style.backgroundColor = clientColor;
+    }
+
+    function join(res) {
+        gameId = res.gameId;
+        boardSize = res.size;
+        clientColor = res.color
+        createBoard(boardSize);
+    }
+
+
+</script>
