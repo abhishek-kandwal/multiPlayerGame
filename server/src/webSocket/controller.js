@@ -1,5 +1,5 @@
 const { uuid, createPayload, sendResponse } = require('../utils');
-const { addGame, getGame, joinGame } = require('../store');
+const { addGame, getGame, joinGame, getGameClients, playGame } = require('../store');
 
 function create(req) {
     const { clientId } = req;
@@ -22,7 +22,7 @@ function join(req) {
 
     let payload = null
     if (!isAdded) {
-        payload = createPayload('alert', {
+        payload = createPayload('alertClient', {
             message: 'Game Lobby Full'
         });
     } else {
@@ -37,7 +37,31 @@ function join(req) {
     sendResponse(clientId, payload);
 }
 
+function play(req) {
+    const { clientId, gameId, btnId } = req;
+    const isUpdated = playGame(clientId, gameId, btnId);
+
+    if (isUpdated) {
+        const clients = getGameClients(gameId);
+        const currentClientData = clients.filter(clientsObj => clientsObj.clientId === clientId)[0];
+
+        let payload = createPayload('play', {
+            btnId,
+            color: currentClientData.color
+        });
+
+        if (clients) {
+            for (let clientObj of clients) {
+                if (clientObj.clientId !== currentClientData.clientId) {
+                    sendResponse(clientObj.clientId, payload);
+                }
+            }
+        }
+    }
+}
+
 module.exports = {
     create,
-    join
+    join,
+    play
 }

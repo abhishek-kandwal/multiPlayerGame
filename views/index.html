@@ -35,7 +35,9 @@
     const responseMethodMapper = {
         connect,
         create,
-        join
+        join,
+        alertClient,
+        play
     };
 
     // client calling functions
@@ -108,6 +110,13 @@
 
     function boardBtnClicked(btnId) {
         document.getElementById(btnId).style.backgroundColor = clientColor;
+        const payload = createPayload('play', {
+            clientId,
+            gameId,
+            btnId: btnId.split('_')[1]
+        });
+
+        ws.send(payload);
     }
 
     function join(res) {
@@ -115,6 +124,17 @@
         boardSize = res.size;
         clientColor = res.color
         createBoard(boardSize);
+    }
+
+    function alertClient(res) {
+        alert(res.message);
+    }
+
+    function play(res) {
+        const { btnId, color } = res;
+        console.log('res ,,', btnId, color);
+        const btn = document.getElementById('btn_' + btnId);
+        btn.style.backgroundColor = color;
     }
 
 

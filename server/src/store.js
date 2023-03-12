@@ -56,10 +56,30 @@ const joinGame = (clientId, gameId) => {
     return [true, clientIdx];
 }
 
+const playGame = (clientId, gameId, btnId) => {
+    const { clients } = store.games[gameId];
+    const clientData = clients.filter(obj => obj.clientId === clientId)[0];
+    if (!clientData.selectedTiles.includes(btnId)) {
+        clientData.score += 1;
+        clientData.selectedTiles.push(btnId);
+
+        return true;
+    }
+
+    return false;
+}
+
+const getGameClients = (gameId) => {
+    const { clients } = store.games[gameId];
+    return clients.map(clientObj => ({ clientId: clientObj.clientId, color: clientObj.color }));
+}
+
 module.exports = {
     addClientToConnection,
     getClientConnection,
     addGame,
     getGame,
-    joinGame
+    joinGame,
+    playGame,
+    getGameClients
 }
